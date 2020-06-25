@@ -16,28 +16,29 @@ public class ClientApp {
     private static final String IP = "127.0.0.1";
     private static final int PORT = 4444;
 
-    private static boolean running = true;
-
     public static void main(String[] args) {
 
         try {
 
+            //Initializing the Client Socket and the input and output Streams
             clientSocket = new Socket(IP, PORT);
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
+            //Scanner to get the user's input
             Scanner in = new Scanner(System.in);
 
-            while(running){
+            //Basic One-Way messaging and disconnecting logic
+            while(true){
 
                 String msg = in.nextLine();
+                sendMessage(msg);
 
+                //Disconnecting the client if 'quit' is send as an input
                 if(msg.equals("quit")){
                     stopConnection();
                     return;
                 }
-
-                sendMessage(msg);
 
             }
 
@@ -47,16 +48,18 @@ public class ClientApp {
 
     }
 
-    public static String sendMessage(String msg) {
+    public static void sendMessage(String msg) {
 
         try {
 
+            //Send message to server
             out.println(msg);
-            return in.readLine();
+
+            //Server response
+            in.readLine();
 
         } catch (IOException e) {
             e.printStackTrace();
-            return "ERROR";
         }
 
     }
@@ -64,6 +67,7 @@ public class ClientApp {
     public static void stopConnection() {
         try {
 
+            //Close the client connection and both the input and output streams
             in.close();
             out.close();
             clientSocket.close();

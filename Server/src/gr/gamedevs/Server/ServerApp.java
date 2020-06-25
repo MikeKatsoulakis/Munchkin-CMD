@@ -1,41 +1,56 @@
 package gr.gamedevs.Server;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
-import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ServerApp {
 
-    private static ServerSocket serverSocket;
-    private static Socket clientSocket;
-    private static PrintWriter out;
-    private static BufferedReader in;
-
     private static final int PORT = 4444;
+
+    //List of connected Clients, currently useless
+    private static List<ClientHandler> clientHandlers = new ArrayList<>();
 
     public static void main(String[] args) {
 
         try {
 
-            serverSocket = new ServerSocket(PORT);
-            clientSocket = serverSocket.accept();
-            System.out.println("Connected..");
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
-            while(clientSocket.isConnected()){
-                String msg = in.readLine();
-                System.out.println(msg);
-                //out.println(msg);
-            }
+            //Starting the server
+            start(PORT);
 
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println("Server could not start..");
         }
 
+    }
+
+    private static ServerSocket serverSocket;
+
+    public static void start(int port) throws IOException {
+
+        //Open a server socket
+        serverSocket = new ServerSocket(port);
+
+        //Server connections management
+        while (true) {
+
+            //Creating a client handler for the connecting client
+            ClientHandler ch = new ClientHandler(serverSocket.accept());
+
+            //Adding the handler to the list
+            clientHandlers.add(ch);
+
+            //Starting the thread
+            ch.start();
+
+        }
+
+    }
+
+    public void stop() throws IOException {
+        serverSocket.close();
     }
 
 }
